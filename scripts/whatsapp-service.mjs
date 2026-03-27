@@ -82,9 +82,45 @@ const BOT_ASSISTANT_SHORTCUT_REGEX = /^\/(resumo|cadastrar-produto|adicionar-con
 const MERCADO_LIVRE_LINK_REGEX =
   /https?:\/\/(?:[\w-]+\.)?(?:mercadolivre\.[a-z.]+|meli\.la)\/[^\s]+/i;
 const CHANNEL_ADMIN_ROLES = new Set(["ADMIN", "OWNER", "SUPERADMIN"]);
+const ENABLE_SSL_VALUES = new Set(["1", "true", "yes", "on", "require", "prefer"]);
+const DISABLE_SSL_VALUES = new Set(["0", "false", "no", "off", "disable"]);
+
+function resolveDatabaseSsl(connectionString) {
+  const configuredValue = String(process.env.DATABASE_SSL ?? process.env.PGSSLMODE ?? "")
+    .trim()
+    .toLowerCase();
+
+  if (ENABLE_SSL_VALUES.has(configuredValue)) {
+    return { rejectUnauthorized: false };
+  }
+
+  if (DISABLE_SSL_VALUES.has(configuredValue)) {
+    return undefined;
+  }
+
+  const normalizedConnectionString = sanitizeText(connectionString);
+  if (!normalizedConnectionString) {
+    return undefined;
+  }
+
+  try {
+    const parsed = new URL(normalizedConnectionString);
+    const host = sanitizeText(parsed.hostname).toLowerCase();
+    if (!host || host === "localhost" || host === "127.0.0.1" || host === "::1") {
+      return undefined;
+    }
+
+    return { rejectUnauthorized: false };
+  } catch {
+    return undefined;
+  }
+}
 
 const databasePool = new Pool({
   connectionString: process.env.DATABASE_URL,
+  ...(resolveDatabaseSsl(process.env.DATABASE_URL)
+    ? { ssl: resolveDatabaseSsl(process.env.DATABASE_URL) }
+    : {}),
 });
 
 let ensureBotDatabasePromise = null;
