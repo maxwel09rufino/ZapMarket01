@@ -9,6 +9,7 @@ export const dynamic = "force-dynamic";
 type LoginPageProps = {
   searchParams: Promise<{
     next?: string | string[];
+    mode?: string | string[];
   }>;
 };
 
@@ -20,6 +21,10 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
     ? resolvedSearchParams.next[0]
     : resolvedSearchParams.next;
   const nextPath = sanitizeNextPath(rawNextPath);
+  const rawMode = Array.isArray(resolvedSearchParams.mode)
+    ? resolvedSearchParams.mode[0]
+    : resolvedSearchParams.mode;
+  const initialMode = rawMode === "register" ? "register" : "login";
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-black px-4 py-10">
@@ -42,7 +47,7 @@ export default async function LoginPage({ searchParams }: LoginPageProps) {
           </div>
         </div>
 
-        <LoginForm nextPath={nextPath} />
+        <LoginForm nextPath={nextPath} initialMode={initialMode} />
       </Card>
     </div>
   );

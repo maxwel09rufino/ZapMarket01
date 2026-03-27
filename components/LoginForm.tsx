@@ -8,6 +8,7 @@ import { Input } from "@/components/ui/input";
 
 type LoginFormProps = {
   nextPath: string;
+  initialMode?: AuthMode;
 };
 
 type AuthApiResponse = {
@@ -17,9 +18,9 @@ type AuthApiResponse = {
 
 type AuthMode = "login" | "register";
 
-export default function LoginForm({ nextPath }: LoginFormProps) {
+export default function LoginForm({ nextPath, initialMode = "login" }: LoginFormProps) {
   const router = useRouter();
-  const [mode, setMode] = useState<AuthMode>("login");
+  const [mode, setMode] = useState<AuthMode>(initialMode);
   const [name, setName] = useState("");
   const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
@@ -84,8 +85,38 @@ export default function LoginForm({ nextPath }: LoginFormProps) {
     }
   };
 
+  const toggleMode = (nextMode: AuthMode) => {
+    setFeedback("");
+    setMode(nextMode);
+  };
+
   return (
     <form className="space-y-5" onSubmit={handleSubmit}>
+      <div className="grid grid-cols-2 gap-2 rounded-2xl border border-white/10 bg-black/20 p-1">
+        <button
+          type="button"
+          onClick={() => toggleMode("login")}
+          className={`rounded-xl px-4 py-3 text-sm font-semibold transition ${
+            mode === "login"
+              ? "bg-green-600 text-white shadow-[0_12px_24px_rgba(34,197,94,0.18)]"
+              : "text-zinc-400 hover:text-zinc-100"
+          }`}
+        >
+          Entrar
+        </button>
+        <button
+          type="button"
+          onClick={() => toggleMode("register")}
+          className={`rounded-xl px-4 py-3 text-sm font-semibold transition ${
+            mode === "register"
+              ? "bg-green-600 text-white shadow-[0_12px_24px_rgba(34,197,94,0.18)]"
+              : "text-zinc-400 hover:text-zinc-100"
+          }`}
+        >
+          Criar conta
+        </button>
+      </div>
+
       <div className="space-y-1">
         <h2 className="font-heading text-2xl font-bold text-zinc-50">{title}</h2>
         <p className="text-sm leading-6 text-zinc-400">{subtitle}</p>
@@ -101,6 +132,7 @@ export default function LoginForm({ nextPath }: LoginFormProps) {
               onChange={(event) => setName(event.target.value)}
               placeholder="Seu nome de acesso"
               autoComplete="username"
+              required={mode === "register"}
               className="h-12 rounded-lg border-zinc-700 bg-zinc-900 pl-11 focus-visible:border-green-500 focus-visible:ring-green-500/20"
             />
           </div>
@@ -118,6 +150,7 @@ export default function LoginForm({ nextPath }: LoginFormProps) {
             onChange={(event) => setIdentifier(event.target.value)}
             placeholder={mode === "login" ? "seu@email.com ou usuario" : "seu@email.com"}
             autoComplete={mode === "login" ? "username" : "email"}
+            required
             className="h-12 rounded-lg border-zinc-700 bg-zinc-900 pl-11 focus-visible:border-green-500 focus-visible:ring-green-500/20"
           />
         </div>
@@ -133,6 +166,7 @@ export default function LoginForm({ nextPath }: LoginFormProps) {
             onChange={(event) => setPassword(event.target.value)}
             placeholder="Sua senha"
             autoComplete={mode === "login" ? "current-password" : "new-password"}
+            required
             className="h-12 rounded-lg border-zinc-700 bg-zinc-900 pl-11 focus-visible:border-green-500 focus-visible:ring-green-500/20"
           />
         </div>
@@ -156,13 +190,14 @@ export default function LoginForm({ nextPath }: LoginFormProps) {
 
       <button
         type="button"
-        className="w-full text-sm font-medium text-zinc-400 transition-colors hover:text-green-400"
+        className="w-full rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-zinc-300 transition-colors hover:border-green-500/30 hover:text-green-300"
         onClick={() => {
-          setFeedback("");
-          setMode((current) => (current === "login" ? "register" : "login"));
+          toggleMode(mode === "login" ? "register" : "login");
         }}
       >
-        {mode === "login" ? "Criar conta" : "Ja tenho conta"}
+        {mode === "login"
+          ? "Nao tem conta? Criar conta agora"
+          : "Ja tenho conta? Voltar para o login"}
       </button>
     </form>
   );
