@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
-import { findAuthenticatedUserByToken } from "@/lib/auth";
+import { findAuthenticatedUserByToken, getTemporaryAuthenticatedUser } from "@/lib/auth";
 import { AUTH_COOKIE_NAME } from "@/lib/auth-token";
 
 export const runtime = "nodejs";
@@ -10,6 +10,20 @@ const RESPONSE_HEADERS = {
 };
 
 export async function GET(request: NextRequest) {
+  const bypassUser = getTemporaryAuthenticatedUser();
+  if (bypassUser) {
+    return NextResponse.json(
+      {
+        authenticated: true,
+        user: bypassUser,
+      },
+      {
+        status: 200,
+        headers: RESPONSE_HEADERS,
+      },
+    );
+  }
+
   const token = request.cookies.get(AUTH_COOKIE_NAME)?.value;
   if (!token) {
     return NextResponse.json(

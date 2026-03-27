@@ -12,13 +12,21 @@ type SessionResponse = {
   authenticated?: boolean;
 };
 
+const AUTH_DISABLED_ON_CLIENT =
+  String(process.env.NEXT_PUBLIC_DISABLE_AUTH ?? "").trim().toLowerCase() === "true" ||
+  String(process.env.NEXT_PUBLIC_DISABLE_AUTH ?? "").trim() === "1";
+
 export function AuthGuard({ children }: AuthGuardProps) {
   const router = useRouter();
   const pathname = usePathname();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [isCheckingSession, setIsCheckingSession] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(AUTH_DISABLED_ON_CLIENT);
+  const [isCheckingSession, setIsCheckingSession] = useState(!AUTH_DISABLED_ON_CLIENT);
 
   useEffect(() => {
+    if (AUTH_DISABLED_ON_CLIENT) {
+      return;
+    }
+
     let cancelled = false;
 
     const checkSession = async () => {

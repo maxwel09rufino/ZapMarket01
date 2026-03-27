@@ -10,6 +10,7 @@ const PASSWORD_MIN_LENGTH = 6;
 const LOGIN_WINDOW_MS = 10 * 60 * 1000;
 const LOGIN_LOCK_MS = 15 * 60 * 1000;
 const LOGIN_MAX_ATTEMPTS = 5;
+const BYPASS_AUTH_FLAG_VALUES = new Set(["1", "true", "yes", "on"]);
 
 type UserRow = {
   id: string;
@@ -57,6 +58,29 @@ export class AuthRateLimitError extends Error {
     super(message);
     this.retryAfterSeconds = retryAfterSeconds;
   }
+}
+
+function isAuthBypassEnabled() {
+  const rawValue = String(process.env.DISABLE_AUTH ?? process.env.AUTH_DISABLED ?? "").trim().toLowerCase();
+  return BYPASS_AUTH_FLAG_VALUES.has(rawValue);
+}
+
+function getBypassAuthenticatedUser(): AuthenticatedUser {
+  return {
+    id: "local-auth-disabled-user",
+    name: "ZapMarket Local",
+    email: "local@zapmarket.dev",
+    plan: DEFAULT_USER_PLAN,
+    createdAt: new Date(0).toISOString(),
+  };
+}
+
+export function getTemporaryAuthenticatedUser() {
+  if (!isAuthBypassEnabled()) {
+    return null;
+  }
+
+  return getBypassAuthenticatedUser();
 }
 
 function createUserId() {
@@ -434,6 +458,11 @@ export async function authenticateUser(input: {
 }
 
 export async function findAuthenticatedUserByToken(token: string) {
+  const bypassUser = getTemporaryAuthenticatedUser();
+  if (bypassUser) {
+    return bypassUser;
+  }
+
   const session = await verifySessionToken(token);
   if (!session) {
     return null;
