@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "node --max-old-space-size=4096 ./node_modules/next/dist/bin/next dev --webpack -H 192.168.16.77",
+    "dev": "node --max-old-space-size=4096 ./node_modules/next/dist/bin/next dev --webpack -H 0.0.0.0",
     "build": "node --max-old-space-size=4096 ./node_modules/next/dist/bin/next build --webpack",
-    "start": "next start -H 192.168.16.77",
+    "start": "next start -H 0.0.0.0",
     "lint": "eslint .",
     "dev:whatsapp-service": "node scripts/whatsapp-service.mjs",
     "dev:whatsapp-proxy": "node scripts/whatsapp-proxy.mjs"

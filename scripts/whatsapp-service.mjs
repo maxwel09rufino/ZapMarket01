@@ -57,7 +57,7 @@ async function loadLocalEnvFiles() {
 
 await loadLocalEnvFiles();
 
-const SERVICE_HOST = process.env.WHATSAPP_SERVICE_HOST ?? "127.0.0.1";
+const SERVICE_HOST = process.env.WHATSAPP_SERVICE_HOST ?? "0.0.0.0";
 const SERVICE_PORT = Number(process.env.WHATSAPP_SERVICE_PORT ?? 3001);
 const DASHBOARD_PORT = Number(process.env.DASHBOARD_PORT ?? 3000);
 const SESSION_PATH =
@@ -339,6 +339,20 @@ function buildDashboardBaseUrls() {
     }
 
     const normalized = normalizeDashboardBaseUrl(`http://${normalizedHost}:${DASHBOARD_PORT}`);
+    if (normalized) {
+      baseUrls.add(normalized);
+    }
+  }
+
+  return [...baseUrls];
+}
+
+function buildServiceBaseUrls() {
+  const baseUrls = new Set();
+  const hostCandidates = new Set(["127.0.0.1", "localhost", ...listLocalIpv4Addresses()]);
+
+  for (const host of hostCandidates) {
+    const normalized = normalizeDashboardBaseUrl(`http://${host}:${SERVICE_PORT}`);
     if (normalized) {
       baseUrls.add(normalized);
     }
@@ -3518,6 +3532,9 @@ server.listen(SERVICE_PORT, SERVICE_HOST, () => {
     console.error("[whatsapp-service] falha ao preparar banco do bot:", error);
   });
   console.log(`[whatsapp-service] rodando em http://${SERVICE_HOST}:${SERVICE_PORT}`);
+  for (const serviceUrl of buildServiceBaseUrls()) {
+    console.log(`[whatsapp-service] acesso: ${serviceUrl}`);
+  }
   console.log(`[whatsapp-service] sessao em ${SESSION_PATH}`);
 });
 
