@@ -30,6 +30,9 @@ export async function proxy(request: NextRequest) {
   }
 
   const { pathname } = request.nextUrl;
+  if (pathname === "/") {
+    return NextResponse.next();
+  }
 
   if (isPublicApiPath(pathname)) {
     return NextResponse.next();

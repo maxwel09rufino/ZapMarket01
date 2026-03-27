@@ -30,7 +30,8 @@ export async function POST(request: NextRequest) {
       id: senderId || groupId,
       name: senderName || "Grupo WhatsApp",
       email: `${senderId || groupId}@zapmarket.local`,
-      role: "user",
+      plan: "Bot Assistente",
+      createdAt: new Date(0).toISOString(),
     };
 
     // Processa mensagem no motor do assistente

@@ -1475,48 +1475,82 @@ function mapImagesFromHtml(html: string) {
   return Array.from(images);
 }
 
-function findJsonLdProduct(html: string) {
-  const regex = /<script\b[^>]*type\s*=\s*["']application\/ld\+json(?:;[^"']*)?["'][^>]*>([\s\S]*?)<\/script>/gi;
+function parseJsonLdProductCandidate(rawJsonLd: string) {
+  const raw = sanitizeText(rawJsonLd);
+  if (!raw) {
+    return null;
+  }
+
+  try {
+    const parsed = JSON.parse(raw) as unknown;
+    const candidates: JsonLdProduct[] = [];
+    const queue: unknown[] = Array.isArray(parsed) ? [...parsed] : [parsed];
+
+    while (queue.length > 0) {
+      const current = queue.shift();
+      if (!current || typeof current !== "object") {
+        continue;
+      }
+
+      const graphValue = (current as { "@graph"?: unknown })["@graph"];
+      if (Array.isArray(graphValue)) {
+        queue.push(...graphValue);
+      }
+
+      candidates.push(current as JsonLdProduct);
+    }
+
+    const productCandidate = candidates.find((entry) => {
+      const type = sanitizeText(entry["@type"]);
+      return type.toLowerCase().includes("product") || Boolean(entry.name && entry.offers);
+    });
+
+    return productCandidate ?? null;
+  } catch {
+    return null;
+  }
+}
+
+function extractRootAppHtmlSegment(html: string) {
+  const rootAppMatch = html.match(/<main\b[^>]*\bid\s*=\s*["']root-app["'][^>]*>/i);
+  if (!rootAppMatch || rootAppMatch.index === undefined) {
+    return null;
+  }
+
+  const rootAppHtml = html.slice(rootAppMatch.index);
+  const closingMainMatch = rootAppHtml.match(/<\/main>/i);
+  if (!closingMainMatch || closingMainMatch.index === undefined) {
+    return rootAppHtml;
+  }
+
+  return rootAppHtml.slice(0, closingMainMatch.index + closingMainMatch[0].length);
+}
+
+function findJsonLdProductInsideHtml(html: string) {
+  const regex =
+    /<script\b[^>]*type\s*=\s*["']application\/ld\+json(?:;[^"']*)?["'][^>]*>([\s\S]*?)<\/script>/gi;
   let match: RegExpExecArray | null;
 
   while ((match = regex.exec(html)) !== null) {
-    const raw = sanitizeText(match[1]);
-    if (!raw) {
-      continue;
-    }
-
-    try {
-      const parsed = JSON.parse(raw) as unknown;
-      const candidates: JsonLdProduct[] = [];
-      const queue: unknown[] = Array.isArray(parsed) ? [...parsed] : [parsed];
-
-      while (queue.length > 0) {
-        const current = queue.shift();
-        if (!current || typeof current !== "object") {
-          continue;
-        }
-
-        const graphValue = (current as { "@graph"?: unknown })["@graph"];
-        if (Array.isArray(graphValue)) {
-          queue.push(...graphValue);
-        }
-
-        candidates.push(current as JsonLdProduct);
-      }
-
-      const productCandidate = candidates.find((entry) => {
-        const type = sanitizeText(entry["@type"]);
-        return type.toLowerCase().includes("product") || Boolean(entry.name && entry.offers);
-      });
-      if (productCandidate) {
-        return productCandidate;
-      }
-    } catch {
-      // Keep scanning remaining scripts.
+    const productCandidate = parseJsonLdProductCandidate(match[1] ?? "");
+    if (productCandidate) {
+      return productCandidate;
     }
   }
 
   return null;
+}
+
+function findJsonLdProduct(html: string) {
+  const rootAppHtml = extractRootAppHtmlSegment(html);
+  if (rootAppHtml) {
+    const rootAppProduct = findJsonLdProductInsideHtml(rootAppHtml);
+    if (rootAppProduct) {
+      return rootAppProduct;
+    }
+  }
+
+  return findJsonLdProductInsideHtml(html);
 }
 
 function extractOriginalPriceFromHtml(html: string, currentPrice: number) {
