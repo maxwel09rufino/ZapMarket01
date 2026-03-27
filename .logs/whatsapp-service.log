@@ -1,0 +1,6 @@
+
+> zapmarket-dashboard@0.1.0 dev:whatsapp-service
+> node scripts/whatsapp-service.mjs
+
+[whatsapp-service] rodando em http://127.0.0.1:3001
+[whatsapp-service] sessao em C:\Users\rufinomrp\Desktop\zapmarket-dashboard\sessions

@@ -1,0 +1,12 @@
+(node:14064) [DEP0169] DeprecationWarning: `url.parse()` behavior is not standardized and prone to errors that have security implications. Use the WHATWG URL API instead. CVEs are not issued for `url.parse()` vulnerabilities.
+(Use `node --trace-deprecation ...` to show where the warning was created)
+[MELI] WARN: Acesso negado ao produto MLB6501528926 (403) 
+[MELI] WARN: Acesso negado ao produto MLB6501528926 (403) 
+[MELI] WARN: Acesso negado ao produto MLB6501528926 (403) 
+[MELI] WARN: Falha ao buscar preferred item MLB6501528926 do catálogo MLB64251864 {}
+[MELI] WARN: Acesso negado ao produto MLB6501528926 (403) 
+[MELI] WARN: Falha ao buscar preferred item MLB6501528926 do catálogo MLB64251864 {}
+[MELI] WARN: Acesso negado ao produto MLB6501528926 (403) 
+[MELI] WARN: Falha ao buscar item derivado MLB6501528926 do catálogo MLB64251864 {}
+[MELI] WARN: Acesso negado ao produto MLB6501528926 (403) 
+[MELI] WARN: Falha ao buscar item derivado MLB6501528926 do catálogo MLB64251864 {}

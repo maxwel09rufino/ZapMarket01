@@ -1,0 +1,40 @@
+{
+  "manifest_version": 3,
+  "name": "ZapMarket Mercado Livre Importer",
+  "description": "Importa produtos do Mercado Livre para o ZapMarket com botao flutuante e autoimportacao para links meli.la.",
+  "version": "1.0.0",
+  "minimum_chrome_version": "114",
+  "permissions": ["storage", "tabs", "clipboardWrite", "webNavigation", "scripting"],
+  "host_permissions": ["http://*/*", "https://*/*"],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "https://meli.la/*",
+        "https://*.meli.la/*",
+        "https://mercadolivre.com/*",
+        "https://*.mercadolivre.com/*",
+        "https://mercadolivre.com.br/*",
+        "https://*.mercadolivre.com.br/*",
+        "https://mercadolibre.com/*",
+        "https://*.mercadolibre.com/*",
+        "http://meli.la/*",
+        "http://*.meli.la/*",
+        "http://mercadolivre.com/*",
+        "http://*.mercadolivre.com/*",
+        "http://mercadolivre.com.br/*",
+        "http://*.mercadolivre.com.br/*",
+        "http://mercadolibre.com/*",
+        "http://*.mercadolibre.com/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "action": {
+    "default_title": "Importar no ZapMarket",
+    "default_popup": "popup.html"
+  }
+}

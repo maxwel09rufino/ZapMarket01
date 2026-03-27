@@ -1,0 +1,53 @@
+============================================
+ ZapMarket - Inicializador Unico
+============================================
+
+[INFO] Abrindo navegador em alguns segundos...
+[INFO] Iniciando servidor Next.js...
+[INFO] Para parar, pressione Ctrl+C nesta janela.
+
+
+> zapmarket-dashboard@0.1.0 dev
+> next dev
+
+▲ Next.js 16.2.1 (Turbopack)
+- Local:         http://localhost:3000
+- Network:       http://192.168.0.16:3000
+✓ Ready in 2.8s
+⚠ Turbopack's filesystem cache has been deleted because we previously detected an internal error in Turbopack. Builds or page loads may be slower as a result.
+
+thread 'tokio-runtime-worker' (10308) panicked at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\qfilter-0.3.0-alpha.2\src\lib.rs:709:9:
+CPU doesn't support the bmi2 instructions
+note: run with `RUST_BACKTRACE=1` environment variable to display a backtrace
+
+thread 'tokio-runtime-worker' (7700) panicked at C:\Users\Administrator\.cargo\registry\src\index.crates.io-1949cf8c6b5b557f\qfilter-0.3.0-alpha.2\src\lib.rs:709:9:
+CPU doesn't support the bmi2 instructions
+
+○ Compiling /whatsapp ...
+ GET /whatsapp 200 in 55s (next.js: 48s, application-code: 7.2s)
+ HEAD / 307 in 1149ms (next.js: 423ms, application-code: 726ms)
+ GET / 307 in 402ms (next.js: 52ms, application-code: 350ms)
+○ Compiling /dashboard ...
+ GET /dashboard 200 in 14.6s (next.js: 11.2s, application-code: 3.5s)
+○ Compiling /api/dashboard/overview ...
+ GET /api/dashboard/overview 200 in 10.8s (next.js: 9.9s, application-code: 959ms)
+ GET /dashboard 200 in 1409ms (next.js: 263ms, application-code: 1147ms)
+ GET /api/dashboard/overview 200 in 109ms (next.js: 29ms, application-code: 80ms)
+Não é possível encontrar o arquivo em lotes.
+ GET /dashboard 200 in 2.6s (next.js: 317ms, application-code: 2.3s)
+ GET /api/dashboard/overview 200 in 65ms (next.js: 23ms, application-code: 42ms)
+ GET /whatsapp 200 in 508ms (next.js: 182ms, application-code: 326ms)
+ GET /dashboard 200 in 634ms (next.js: 146ms, application-code: 488ms)
+ GET /api/dashboard/overview 200 in 68ms (next.js: 23ms, application-code: 45ms)
+ GET /whatsapp 200 in 192ms (next.js: 19ms, application-code: 173ms)
+ GET /dashboard 200 in 3.4s (next.js: 514ms, application-code: 2.8s)
+ GET /whatsapp 200 in 683ms (next.js: 131ms, application-code: 552ms)
+ GET /api/dashboard/overview 200 in 227ms (next.js: 29ms, application-code: 198ms)
+ GET /whatsapp 200 in 1158ms (next.js: 196ms, application-code: 962ms)
+ GET /whatsapp 200 in 597ms (next.js: 39ms, application-code: 558ms)
+ GET /dashboard 200 in 1686ms (next.js: 318ms, application-code: 1368ms)
+ GET /api/dashboard/overview 200 in 1139ms (next.js: 129ms, application-code: 1010ms)
+ GET /dashboard 200 in 1851ms (next.js: 368ms, application-code: 1483ms)
+ GET /api/dashboard/overview 200 in 275ms (next.js: 236ms, application-code: 39ms)
+ GET /dashboard 200 in 3.2s (next.js: 630ms, application-code: 2.5s)
+ GET /api/dashboard/overview 200 in 442ms (next.js: 222ms, application-code: 220ms)

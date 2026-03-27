@@ -1,0 +1,14 @@
+
+> zapmarket-dashboard@0.1.0 dev
+> node --max-old-space-size=4096 ./node_modules/next/dist/bin/next dev --webpack -H 192.168.16.77
+
+▲ Next.js 16.2.1 (webpack)
+- Local:         http://192.168.16.77:3000
+- Network:       http://192.168.16.77:3000
+- Environments: .env.local
+✓ Ready in 589ms
+
+ GET /api/campaigns 200 in 1646ms (next.js: 1425ms, application-code: 221ms)
+ GET /api/products 200 in 1055ms (next.js: 860ms, application-code: 196ms)
+ GET /api/recipients 200 in 215ms (next.js: 203ms, application-code: 12ms)
+ POST /api/campaigns 201 in 37ms (next.js: 12ms, application-code: 25ms)

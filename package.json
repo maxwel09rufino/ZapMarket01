@@ -1,0 +1,46 @@
+{
+  "name": "zapmarket-dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "node --max-old-space-size=4096 ./node_modules/next/dist/bin/next dev --webpack -H 192.168.16.77",
+    "build": "node --max-old-space-size=4096 ./node_modules/next/dist/bin/next build --webpack",
+    "start": "next start -H 192.168.16.77",
+    "lint": "eslint .",
+    "dev:whatsapp-service": "node scripts/whatsapp-service.mjs",
+    "dev:whatsapp-proxy": "node scripts/whatsapp-proxy.mjs"
+  },
+  "dependencies": {
+    "@radix-ui/react-avatar": "^1.1.11",
+    "@radix-ui/react-slot": "^1.2.4",
+    "@whiskeysockets/baileys": "^7.0.0-rc.9",
+    "axios": "^1.13.6",
+    "bcryptjs": "^3.0.3",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "jimp": "^1.6.0",
+    "jose": "^6.2.2",
+    "link-preview-js": "^3.2.0",
+    "lucide-react": "^0.577.0",
+    "next": "16.2.1",
+    "pg": "^8.20.0",
+    "pino": "^10.3.1",
+    "qrcode": "^1.5.4",
+    "react": "19.2.4",
+    "react-dom": "19.2.4",
+    "tailwind-merge": "^3.5.0",
+    "ws": "^8.20.0"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4",
+    "@types/node": "^20",
+    "@types/pg": "^8.20.0",
+    "@types/qrcode": "^1.5.6",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "eslint": "^9",
+    "eslint-config-next": "16.2.1",
+    "tailwindcss": "^4",
+    "typescript": "^5"
+  }
+}

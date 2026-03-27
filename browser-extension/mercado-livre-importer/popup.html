@@ -1,0 +1,184 @@
+<!doctype html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>ZapMarket Importer</title>
+    <link rel="stylesheet" href="popup.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="hero">
+        <p class="eyebrow">ZapMarket x Mercado Livre</p>
+        <h1>Importador profissional</h1>
+        <p class="subtitle">
+          Importe um produto unico ou varra listas completas do Mercado Livre com fila, progresso,
+          exportacao e envio direto para o painel.
+        </p>
+      </section>
+
+      <section class="panel">
+        <label class="label" for="serverUrl">URL do painel</label>
+        <div class="inline-row">
+          <input id="serverUrl" type="url" placeholder="http://localhost:3000" />
+          <button id="saveServerUrl" class="ghost" type="button">Salvar</button>
+        </div>
+        <p class="hint">Use a URL do seu dashboard ZapMarket para previews e importacao.</p>
+      </section>
+
+      <section class="tabs">
+        <button id="productTabButton" class="tab-button is-active" type="button">Produto</button>
+        <button id="listTabButton" class="tab-button" type="button">Lista</button>
+      </section>
+
+      <section id="productView" class="view">
+        <section class="panel">
+          <div class="heading-row">
+            <label class="label" for="productUrl">Link do produto</label>
+            <button id="useCurrentTab" class="ghost" type="button">Usar aba atual</button>
+          </div>
+          <textarea
+            id="productUrl"
+            rows="4"
+            placeholder="https://meli.la/... ou https://www.mercadolivre.com.br/..."
+          ></textarea>
+
+          <div class="action-row">
+            <button id="previewButton" class="primary" type="button">Buscar preview</button>
+            <button id="importButton" class="secondary" type="button" disabled>Importar agora</button>
+          </div>
+        </section>
+
+        <section id="statusCard" class="status-card hidden"></section>
+
+        <section id="previewCard" class="preview-card hidden">
+          <div class="preview-head">
+            <img id="previewImage" alt="Produto" class="preview-image" />
+            <div class="preview-copy">
+              <p id="previewSeller" class="preview-seller"></p>
+              <h2 id="previewTitle"></h2>
+              <p id="previewPrice" class="preview-price"></p>
+            </div>
+          </div>
+
+          <div class="chips">
+            <span id="previewStatusChip" class="chip"></span>
+            <span id="previewMarketplaceChip" class="chip"></span>
+          </div>
+
+          <p id="previewExisting" class="preview-existing hidden"></p>
+
+          <div class="links">
+            <a id="previewLink" href="#" target="_blank" rel="noreferrer">Abrir produto</a>
+            <a id="productsLink" href="#" target="_blank" rel="noreferrer">Abrir painel</a>
+          </div>
+        </section>
+      </section>
+
+      <section id="listView" class="view hidden">
+        <section class="panel">
+          <div class="heading-row">
+            <label class="label" for="listUrls">Fila de URLs</label>
+            <div class="mini-actions">
+              <button id="fillCurrentTabList" class="ghost" type="button">Usar aba atual</button>
+              <button id="appendCurrentTabList" class="ghost" type="button">Adicionar</button>
+              <button id="clearListUrls" class="ghost" type="button">Limpar</button>
+            </div>
+          </div>
+          <textarea
+            id="listUrls"
+            rows="5"
+            placeholder="Cole uma ou mais URLs de busca/lista do Mercado Livre, uma por linha."
+          ></textarea>
+          <p class="hint">
+            A extensao coleta os cards pela propria aba do navegador para reduzir bloqueios por
+            verificacao de trafego. Se quiser varrer tudo, deixe o limite de produtos em branco.
+          </p>
+        </section>
+
+        <section class="panel">
+          <div class="grid grid-2">
+            <label class="field">
+              <span class="field-label">Maximo de produtos (opcional)</span>
+              <input id="maxProducts" type="number" min="1" step="1" placeholder="Em branco = todos" />
+            </label>
+            <label class="field">
+              <span class="field-label">Tags</span>
+              <input id="tagInput" type="text" placeholder="roupas, promocao, inverno" />
+            </label>
+          </div>
+          <div class="grid grid-2">
+            <label class="field">
+              <span class="field-label">Preco minimo</span>
+              <input id="minPrice" type="number" min="0" step="0.01" placeholder="0" />
+            </label>
+            <label class="field">
+              <span class="field-label">Preco maximo</span>
+              <input id="maxPrice" type="number" min="0" step="0.01" placeholder="0" />
+            </label>
+          </div>
+          <div class="action-stack">
+            <div class="action-row">
+              <button id="startCollectionButton" class="primary" type="button">Coletar lista</button>
+              <button id="pauseCollectionButton" class="secondary" type="button">Pausar</button>
+              <button id="resumeCollectionButton" class="secondary" type="button">Retomar</button>
+              <button id="clearCollectionButton" class="ghost" type="button">Resetar</button>
+            </div>
+            <div class="action-row">
+              <button id="startImportButton" class="secondary" type="button">Importar no painel</button>
+              <button id="pauseImportButton" class="secondary" type="button">Pausar importacao</button>
+              <button id="resumeImportButton" class="secondary" type="button">Retomar importacao</button>
+            </div>
+            <div class="action-row">
+              <button id="exportCsvButton" class="ghost" type="button">Exportar links CSV</button>
+              <button id="exportJsonButton" class="ghost" type="button">Exportar links JSON</button>
+            </div>
+          </div>
+        </section>
+
+        <section id="listStatusCard" class="status-card hidden"></section>
+
+        <section class="panel progress-panel">
+          <div class="heading-row">
+            <div>
+              <p class="label compact-label">Progresso</p>
+              <p id="progressSummary" class="progress-summary">Aguardando coleta.</p>
+            </div>
+            <span id="progressPill" class="chip">idle</span>
+          </div>
+          <div class="progress-track">
+            <div id="progressBar" class="progress-bar"></div>
+          </div>
+          <div id="statsGrid" class="stats-grid"></div>
+          <div id="queueList" class="queue-list"></div>
+        </section>
+
+        <section class="panel">
+          <div class="heading-row">
+            <div>
+              <p class="label compact-label">Produtos coletados</p>
+              <p id="tableSummary" class="hint">Nenhum item coletado ainda.</p>
+            </div>
+          </div>
+          <div class="table-shell">
+            <table class="results-table">
+              <thead>
+                <tr>
+                  <th>Titulo</th>
+                  <th>Preco</th>
+                  <th>Vendedor</th>
+                  <th>Frete</th>
+                  <th>Condicao</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="resultsTableBody"></tbody>
+            </table>
+          </div>
+        </section>
+      </section>
+    </main>
+
+    <script src="popup.js"></script>
+  </body>
+</html>
