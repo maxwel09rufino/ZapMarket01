@@ -3,6 +3,7 @@ import {
   createMeliCredentialFromAuthorizationCode,
   MeliCredentialValidationError,
 } from "@/lib/meli/store";
+import { resolveRequestOrigin } from "@/lib/request-origin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -12,13 +13,14 @@ function sanitizeText(value: string | null | undefined) {
 }
 
 function resolveSettingsUrl(request: NextRequest, redirectPath?: string) {
-  const fallback = new URL("/configuracoes?tab=credentials", request.nextUrl.origin);
+  const origin = resolveRequestOrigin(request);
+  const fallback = new URL("/configuracoes?tab=credentials", origin);
   const normalized = sanitizeText(redirectPath);
   if (!normalized || !normalized.startsWith("/") || normalized.startsWith("//")) {
     return fallback;
   }
 
-  return new URL(normalized, request.nextUrl.origin);
+  return new URL(normalized, origin);
 }
 
 function appendStatus(url: URL, status: "success" | "error", message: string) {
@@ -66,7 +68,7 @@ export async function GET(request: NextRequest) {
   }
 
   try {
-    const redirectUri = new URL("/api/meli/oauth/callback", request.nextUrl.origin).toString();
+    const redirectUri = new URL("/api/meli/oauth/callback", resolveRequestOrigin(request)).toString();
     const result = await createMeliCredentialFromAuthorizationCode({
       stateToken: state,
       code,

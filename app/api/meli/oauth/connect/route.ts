@@ -4,6 +4,7 @@ import {
   MeliCredentialValidationError,
   resolveMeliUserId,
 } from "@/lib/meli/store";
+import { resolveRequestOrigin } from "@/lib/request-origin";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -66,7 +67,7 @@ export async function POST(request: NextRequest) {
       redirectPath: body.redirect_path,
     });
 
-    const redirectUri = new URL("/api/meli/oauth/callback", request.nextUrl.origin).toString();
+    const redirectUri = new URL("/api/meli/oauth/callback", resolveRequestOrigin(request)).toString();
     const authorizationUrl = new URL(MELI_OAUTH_AUTHORIZE_URL);
     authorizationUrl.searchParams.set("response_type", "code");
     authorizationUrl.searchParams.set("client_id", session.clientId ?? "");
