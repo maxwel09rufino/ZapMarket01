@@ -212,10 +212,6 @@ export default function MeliCredentialsManager() {
     setSuccess("");
 
     try {
-      if (!formData.client_id.trim() || !formData.client_secret.trim()) {
-        throw new Error("Preencha client_id e client_secret antes de conectar.");
-      }
-
       const response = await fetch("/api/meli/oauth/connect", {
         method: "POST",
         headers: {
@@ -234,8 +230,8 @@ export default function MeliCredentialsManager() {
       const payload = (await response.json().catch(() => null)) as
         | {
             authorizationUrl?: string;
-            error?: string;
-          }
+          error?: string;
+        }
         | null;
 
       if (!response.ok || !payload?.authorizationUrl) {
@@ -271,6 +267,10 @@ export default function MeliCredentialsManager() {
             como fallback. Para gerar links de afiliado automaticamente, informe tambem{" "}
             <code className="rounded bg-white/5 px-1.5 py-0.5">matt_tool</code> e o slug social
             usado no <code className="rounded bg-white/5 px-1.5 py-0.5">matt_word</code>.
+          </p>
+          <p className="mt-2 text-sm leading-6 text-zinc-500">
+            Se a app OAuth ja estiver configurada no servidor, voce pode clicar em conectar mesmo
+            com esses campos vazios.
           </p>
         </div>
 

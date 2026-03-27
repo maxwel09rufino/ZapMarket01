@@ -22,6 +22,10 @@ type ConnectBody = {
   redirect_path?: string;
 };
 
+function sanitizeText(value: string | null | undefined) {
+  return String(value ?? "").trim();
+}
+
 function resolveError(error: unknown) {
   if (error instanceof MeliCredentialValidationError) {
     return {
@@ -47,11 +51,16 @@ export async function POST(request: NextRequest) {
 
   try {
     const userId = resolveMeliUserId(request.headers.get("x-user-id"));
+    const configuredClientId = sanitizeText(process.env.MELI_OAUTH_CLIENT_ID);
+    const configuredClientSecret = sanitizeText(process.env.MELI_OAUTH_CLIENT_SECRET);
+    const clientId = sanitizeText(body.client_id) || configuredClientId;
+    const clientSecret = sanitizeText(body.client_secret) || configuredClientSecret;
+
     const session = await createMeliOAuthSession({
       userId,
       name: body.name,
-      clientId: body.client_id ?? "",
-      clientSecret: body.client_secret ?? "",
+      clientId,
+      clientSecret,
       affiliateTrackingId: body.affiliate_tracking_id,
       affiliateSlug: body.affiliate_slug,
       redirectPath: body.redirect_path,
@@ -69,6 +78,7 @@ export async function POST(request: NextRequest) {
         authorizationUrl: authorizationUrl.toString(),
         redirectUri,
         expiresAt: session.expiresAt,
+        usingConfiguredApp: Boolean(configuredClientId && configuredClientSecret),
       },
       {
         headers: NO_STORE_HEADERS,

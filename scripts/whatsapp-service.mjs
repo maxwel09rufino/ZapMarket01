@@ -1125,15 +1125,92 @@ async function getMercadoLivreAccessToken() {
     return mercadoLivreTokenState.pendingPromise;
   }
 
+  async function readActiveStoredMeliCredential() {
+    try {
+      const result = await databasePool.query(
+        `
+          SELECT
+            id,
+            client_id,
+            client_secret,
+            refresh_token,
+            access_token,
+            expires_at
+          FROM meli_credentials
+          WHERE is_active = true
+          ORDER BY created_at DESC
+          LIMIT 1
+        `,
+      );
+
+      return result.rows[0] ?? null;
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      if (/meli_credentials/i.test(message) || /relation .* does not exist/i.test(message)) {
+        return null;
+      }
+
+      throw error;
+    }
+  }
+
+  async function updateStoredMeliCredentialTokens(id, tokenPayload) {
+    try {
+      await databasePool.query(
+        `
+          UPDATE meli_credentials
+          SET
+            refresh_token = $2,
+            access_token = $3,
+            token_type = $4,
+            expires_at = $5,
+            last_used_at = now(),
+            updated_at = now()
+          WHERE id = $1
+        `,
+        [
+          id,
+          tokenPayload.refreshToken,
+          tokenPayload.accessToken,
+          tokenPayload.tokenType ?? "Bearer",
+          tokenPayload.expiresAt,
+        ],
+      );
+    } catch (error) {
+      console.warn("[whatsapp-service] falha ao atualizar token Mercado Livre no banco:", error);
+    }
+  }
+
   const clientId = sanitizeText(process.env.MERCADO_LIVRE_CLIENT_ID);
   const clientSecret = sanitizeText(process.env.MERCADO_LIVRE_CLIENT_SECRET);
   const refreshToken = sanitizeText(process.env.MERCADO_LIVRE_REFRESH_TOKEN);
 
-  if (!clientId || !clientSecret || !refreshToken) {
-    return null;
-  }
-
   mercadoLivreTokenState.pendingPromise = (async () => {
+    const storedCredential = await readActiveStoredMeliCredential();
+    const storedAccessToken = sanitizeText(storedCredential?.access_token);
+    const storedExpiresAt = storedCredential?.expires_at ? new Date(storedCredential.expires_at) : null;
+    const storedTokenValid =
+      storedAccessToken &&
+      storedExpiresAt &&
+      !Number.isNaN(storedExpiresAt.getTime()) &&
+      storedExpiresAt.getTime() - 60_000 > now;
+
+    if (storedTokenValid) {
+      mercadoLivreTokenState.accessToken = storedAccessToken;
+      mercadoLivreTokenState.expiresAt = storedExpiresAt.getTime();
+      return storedAccessToken;
+    }
+
+    const preferredClientId = sanitizeText(storedCredential?.client_id) || clientId;
+    const preferredClientSecret = sanitizeText(storedCredential?.client_secret) || clientSecret;
+    const preferredRefreshToken = sanitizeText(storedCredential?.refresh_token) || refreshToken;
+
+    if (!preferredClientId || !preferredClientSecret || !preferredRefreshToken) {
+      mercadoLivreTokenState.accessToken = null;
+      mercadoLivreTokenState.expiresAt = 0;
+      return null;
+    }
+
     const response = await fetchJsonWithTimeout(`${MERCADO_LIVRE_API_BASE}/oauth/token`, {
       method: "POST",
       headers: {
@@ -1141,9 +1218,9 @@ async function getMercadoLivreAccessToken() {
       },
       body: new URLSearchParams({
         grant_type: "refresh_token",
-        client_id: clientId,
-        client_secret: clientSecret,
-        refresh_token: refreshToken,
+        client_id: preferredClientId,
+        client_secret: preferredClientSecret,
+        refresh_token: preferredRefreshToken,
       }),
       timeoutMs: MERCADO_LIVRE_TIMEOUT_MS,
     });
@@ -1157,6 +1234,16 @@ async function getMercadoLivreAccessToken() {
     mercadoLivreTokenState.accessToken = sanitizeText(response.payload.access_token);
     mercadoLivreTokenState.expiresAt =
       Date.now() + Number(response.payload.expires_in ?? 21_600) * 1000;
+
+    if (storedCredential?.id) {
+      await updateStoredMeliCredentialTokens(storedCredential.id, {
+        accessToken: mercadoLivreTokenState.accessToken,
+        refreshToken:
+          sanitizeText(response.payload.refresh_token) || preferredRefreshToken,
+        tokenType: sanitizeText(response.payload.token_type) || "Bearer",
+        expiresAt: new Date(mercadoLivreTokenState.expiresAt),
+      });
+    }
 
     return mercadoLivreTokenState.accessToken;
   })();
