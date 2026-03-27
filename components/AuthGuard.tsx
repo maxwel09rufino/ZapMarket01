@@ -12,9 +12,7 @@ type SessionResponse = {
   authenticated?: boolean;
 };
 
-const AUTH_DISABLED_ON_CLIENT =
-  String(process.env.NEXT_PUBLIC_DISABLE_AUTH ?? "").trim().toLowerCase() === "true" ||
-  String(process.env.NEXT_PUBLIC_DISABLE_AUTH ?? "").trim() === "1";
+const AUTH_DISABLED_ON_CLIENT = true;
 
 export function AuthGuard({ children }: AuthGuardProps) {
   const router = useRouter();

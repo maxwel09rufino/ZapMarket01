@@ -10,7 +10,7 @@ const PASSWORD_MIN_LENGTH = 6;
 const LOGIN_WINDOW_MS = 10 * 60 * 1000;
 const LOGIN_LOCK_MS = 15 * 60 * 1000;
 const LOGIN_MAX_ATTEMPTS = 5;
-const BYPASS_AUTH_FLAG_VALUES = new Set(["1", "true", "yes", "on"]);
+const AUTH_BYPASS_ENABLED = true;
 
 type UserRow = {
   id: string;
@@ -60,11 +60,6 @@ export class AuthRateLimitError extends Error {
   }
 }
 
-function isAuthBypassEnabled() {
-  const rawValue = String(process.env.DISABLE_AUTH ?? process.env.AUTH_DISABLED ?? "").trim().toLowerCase();
-  return BYPASS_AUTH_FLAG_VALUES.has(rawValue);
-}
-
 function getBypassAuthenticatedUser(): AuthenticatedUser {
   return {
     id: "local-auth-disabled-user",
@@ -76,7 +71,7 @@ function getBypassAuthenticatedUser(): AuthenticatedUser {
 }
 
 export function getTemporaryAuthenticatedUser() {
-  if (!isAuthBypassEnabled()) {
+  if (!AUTH_BYPASS_ENABLED) {
     return null;
   }
 
