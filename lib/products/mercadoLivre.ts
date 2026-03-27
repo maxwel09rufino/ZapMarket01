@@ -1867,6 +1867,154 @@ function buildProductUrlFromItemId(itemId: string) {
   return buildMercadoLivreItemUrl(itemId);
 }
 
+export async function fetchMercadoLivreProductByHtml(
+  rawUrl: string,
+): Promise<MercadoLivreFetchedProduct> {
+  const productUrl = sanitizeText(rawUrl);
+  if (productUrl.length === 0) {
+    throw new ProductLookupError(PRODUCT_LOOKUP_ERROR_MESSAGE, 400);
+  }
+
+  ensureValidMercadoLivreUrl(productUrl);
+  const preferredAffiliateLink = normalizeAffiliateLink(productUrl);
+  const catalogProductId = extractMercadoLivreCatalogProductIdFromUrl(productUrl);
+  const requestedOfficialStoreId = extractMercadoLivreOfficialStoreIdFromUrl(productUrl);
+  const requestedItemId =
+    extractPreferredItemIdFromUrl(productUrl) ??
+    (catalogProductId ? null : extractItemIdFromText(productUrl));
+
+  const urlCacheKey = normalizeUrlForCache(productUrl);
+  logMercadoLivreLookup("lookup-start", {
+    linkOriginal: productUrl,
+    linkResolvido: productUrl,
+    idProduto: requestedItemId ?? undefined,
+    catalogProductId: catalogProductId ?? undefined,
+  });
+
+  const cachedByUrl = readValidatedCache(urlCacheKey, {
+    originalUrl: productUrl,
+    resolvedUrl: productUrl,
+    expectedItemId: requestedItemId,
+  });
+  if (cachedByUrl) {
+    return withPreferredAffiliateLink(cachedByUrl, preferredAffiliateLink);
+  }
+
+  const isAffiliateOrSocialSource =
+    /https?:\/\/(?:[\w-]+\.)?meli\.la\//i.test(productUrl) || isSocialOrNonProductPath(productUrl);
+
+  if (isAffiliateOrSocialSource) {
+    try {
+      const directProductUrl = await resolveDirectProductUrlFromAffiliateLanding(productUrl);
+      if (directProductUrl) {
+        logMercadoLivreLookup("link-resolved", {
+          linkOriginal: productUrl,
+          linkResolvido: directProductUrl,
+          idProduto: extractItemIdFromText(directProductUrl) ?? requestedItemId ?? undefined,
+        });
+        const resolvedProduct = await fetchMercadoLivreProductByHtml(directProductUrl);
+        writeCache([urlCacheKey, normalizeUrlForCache(directProductUrl)], resolvedProduct);
+        return withPreferredAffiliateLink(resolvedProduct, preferredAffiliateLink);
+      }
+    } catch (error) {
+      logMercadoLivreLookup("link-resolution-failed", {
+        linkOriginal: productUrl,
+        idProduto: requestedItemId ?? undefined,
+        motivo: error instanceof Error ? error.message : "falha-ao-resolver-link",
+      });
+    }
+  }
+
+  let resolvedItemId: string | null = requestedItemId;
+  try {
+    resolvedItemId = resolvedItemId ?? (await resolveItemIdFromUrl(productUrl));
+  } catch {
+    resolvedItemId = resolvedItemId ?? null;
+  }
+
+  const catalogCacheKey = catalogProductId
+    ? buildCatalogCacheKey(catalogProductId, requestedOfficialStoreId)
+    : null;
+  if (catalogCacheKey) {
+    const cachedCatalogProduct = readValidatedCache(catalogCacheKey, {
+      originalUrl: productUrl,
+      resolvedUrl: productUrl,
+      expectedItemId: resolvedItemId ?? requestedItemId,
+    });
+    if (cachedCatalogProduct) {
+      writeCache([urlCacheKey], cachedCatalogProduct);
+      return withPreferredAffiliateLink(cachedCatalogProduct, preferredAffiliateLink);
+    }
+  }
+
+  if (resolvedItemId) {
+    const itemCacheKey = `item:${resolvedItemId}`;
+    const cachedByItem = readValidatedCache(itemCacheKey, {
+      originalUrl: productUrl,
+      resolvedUrl: productUrl,
+      expectedItemId: resolvedItemId,
+    });
+    if (cachedByItem) {
+      writeCache([urlCacheKey], cachedByItem);
+      return withPreferredAffiliateLink(cachedByItem, preferredAffiliateLink);
+    }
+
+    try {
+      const scrapedFromItemId = await scrapeProductFromPage(buildProductUrlFromItemId(resolvedItemId));
+      const finalizedScrapedProduct = finalizeFetchedProduct(scrapedFromItemId.product, {
+        originalUrl: productUrl,
+        resolvedUrl: scrapedFromItemId.finalUrl,
+        expectedItemId: resolvedItemId,
+        returnedItemId: scrapedFromItemId.itemId ?? resolvedItemId,
+        source: "html:item-url",
+      });
+      const cacheKeys = [
+        urlCacheKey,
+        itemCacheKey,
+        normalizeUrlForCache(scrapedFromItemId.finalUrl),
+        normalizeUrlForCache(finalizedScrapedProduct.link),
+      ];
+      if (catalogCacheKey) {
+        cacheKeys.push(catalogCacheKey);
+      }
+      writeCache(cacheKeys, finalizedScrapedProduct);
+      return withPreferredAffiliateLink(finalizedScrapedProduct, preferredAffiliateLink);
+    } catch (error) {
+      logMercadoLivreLookup("html-item-fallback", {
+        linkOriginal: productUrl,
+        linkResolvido: buildProductUrlFromItemId(resolvedItemId),
+        idProduto: resolvedItemId,
+        motivo: error instanceof Error ? error.message : "falha-html-item",
+      });
+    }
+  }
+
+  const scraped = await scrapeProductFromPage(productUrl);
+  const finalizedScrapedProduct = finalizeFetchedProduct(scraped.product, {
+    originalUrl: productUrl,
+    resolvedUrl: scraped.finalUrl,
+    expectedItemId: resolvedItemId ?? requestedItemId ?? undefined,
+    returnedItemId: scraped.itemId ?? resolvedItemId ?? requestedItemId ?? undefined,
+    source: "html:raw-url",
+  });
+  const cacheKeys = [
+    urlCacheKey,
+    normalizeUrlForCache(scraped.finalUrl),
+    normalizeUrlForCache(finalizedScrapedProduct.link),
+  ];
+  if (catalogCacheKey) {
+    cacheKeys.push(catalogCacheKey);
+  }
+  if (resolvedItemId) {
+    cacheKeys.push(`item:${resolvedItemId}`);
+  }
+  if (scraped.itemId && scraped.itemId !== resolvedItemId) {
+    cacheKeys.push(`item:${scraped.itemId}`);
+  }
+  writeCache(cacheKeys, finalizedScrapedProduct);
+  return withPreferredAffiliateLink(finalizedScrapedProduct, preferredAffiliateLink);
+}
+
 function withPreferredItemIdOnUrl(rawUrl: string, preferredItemId?: string) {
   const normalizedPreferredItemId = sanitizeText(preferredItemId).toUpperCase();
   if (!normalizedPreferredItemId) {

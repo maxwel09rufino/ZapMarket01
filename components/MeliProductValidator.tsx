@@ -16,6 +16,7 @@ import { subscribeToSoftRefresh } from "@/lib/autoRefresh";
 
 interface ValidationResult {
   id: string;
+  product_link: string;
   product_id: string;
   title: string;
   price: number;
@@ -120,8 +121,9 @@ export default function MeliProductValidator() {
             <div>
               <h2 className="font-heading text-3xl font-bold text-zinc-50">Validar produto</h2>
               <p className="mt-2 max-w-2xl text-sm leading-6 text-zinc-400">
-                Teste qualquer link do Mercado Livre usando a API oficial, veja o retorno salvo no
-                PostgreSQL e confirme se o item esta pronto para o seu fluxo.
+                Teste qualquer link do Mercado Livre usando leitura HTML inteligente com
+                `root-app` e `application/ld+json`, veja o retorno salvo no PostgreSQL e confirme
+                se o item esta pronto para o seu fluxo.
               </p>
             </div>
 
@@ -172,7 +174,9 @@ export default function MeliProductValidator() {
             <div className="rounded-2xl border border-white/10 bg-black/15 px-4 py-3">
               <p className="text-xs uppercase tracking-[0.14em] text-zinc-500">Historico</p>
               <p className="mt-2 text-2xl font-bold text-zinc-50">{validations.length}</p>
-              <p className="mt-1 text-sm text-zinc-400">Ultimas validacoes carregadas da API.</p>
+              <p className="mt-1 text-sm text-zinc-400">
+                Ultimas validacoes carregadas do historico HTML.
+              </p>
             </div>
 
             <div className="rounded-2xl border border-white/10 bg-black/15 px-4 py-3">
@@ -186,7 +190,7 @@ export default function MeliProductValidator() {
             </div>
 
             <div className="rounded-2xl border border-emerald-500/20 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-100">
-              A validacao usa a API oficial do Mercado Livre, sem scraping.
+              A validacao usa HTML + `root-app` + JSON-LD, sem depender da API oficial.
             </div>
           </div>
         </Card>
@@ -200,7 +204,7 @@ export default function MeliProductValidator() {
                 Resultado da validacao
               </h3>
               <p className="mt-1 text-sm text-zinc-400">
-                Dados retornados pela API oficial para o ultimo link testado.
+                Dados retornados pelo parser HTML inteligente para o ultimo link testado.
               </p>
             </div>
 
@@ -337,13 +341,13 @@ export default function MeliProductValidator() {
                     </span>
 
                     <a
-                      href={`https://api.mercadolibre.com/items/${validation.product_id}`}
+                      href={validation.product_link}
                       target="_blank"
                       rel="noreferrer"
                       className="inline-flex items-center gap-2 text-sm font-medium text-primary transition hover:text-primary/80"
                     >
                       <ExternalLink className="size-4" />
-                      API
+                      Abrir link
                     </a>
                   </div>
                 </div>

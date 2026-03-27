@@ -99,7 +99,7 @@ function pushRecentError(job: MutableProductImportJob, errorMessage: string) {
 }
 
 function buildCompletionMessage(job: MutableProductImportJob) {
-  return `Importacao oficial concluida: ${job.importedCount} importado(s), ${job.skippedCount} ignorado(s), ${job.failedCount} falha(s).`;
+  return `Importacao HTML concluida: ${job.importedCount} importado(s), ${job.skippedCount} ignorado(s), ${job.failedCount} falha(s).`;
 }
 
 function markJobCompleted(job: MutableProductImportJob, message: string) {
@@ -274,7 +274,7 @@ function createJob(input: {
     sourceLabel: input.sourceLabel,
     status: "running",
     phase: input.phase ?? "importing",
-    message: input.message ?? "Preparando importacao oficial do Mercado Livre...",
+    message: input.message ?? "Preparando importacao por HTML inteligente...",
     startedAt: startedAtDate.toISOString(),
     startedAtDate,
     maxProducts: input.maxProducts,
@@ -375,7 +375,7 @@ async function importSingleProduct(
   entry: ProductImportQueueEntry,
 ) {
   job.currentProductUrl = entry.shortLink || entry.sourceUrl;
-  setJobMessage(job, "Importando produtos pela API oficial...");
+  setJobMessage(job, "Importando produtos pelo HTML inteligente...");
 
   try {
     const createInput = await buildCreateInput(entry);
@@ -465,7 +465,7 @@ async function runProductLinksImportJob(job: MutableProductImportJob, productEnt
     markJobCompleted(job, buildCompletionMessage(job));
   } catch (error) {
     const errorMessage =
-      error instanceof Error ? error.message : "Falha ao importar produtos pela API oficial.";
+      error instanceof Error ? error.message : "Falha ao importar produtos pelo parser HTML.";
     markJobFailed(job, errorMessage);
   }
 }
@@ -519,7 +519,7 @@ async function runProductSearchImportJob(job: MutableProductImportJob, sourceUrl
               : sourceUrl;
           setJobMessage(
             job,
-            `Buscando produtos pela API oficial do Mercado Livre: ${update.discoveredProducts} encontrado(s) em ${update.scannedPages} pagina(s).`,
+            `Buscando produtos pela lista do Mercado Livre: ${update.discoveredProducts} encontrado(s) em ${update.scannedPages} pagina(s).`,
           );
         },
       });
@@ -532,7 +532,7 @@ async function runProductSearchImportJob(job: MutableProductImportJob, sourceUrl
         totalResults: collected.totalResults,
         discoveredProducts: collected.items.length,
         productLinks: collected.productLinks,
-        message: `Busca oficial concluida para "${collected.searchTerm}". Importando ${collected.productLinks.length} produto(s).`,
+        message: `Busca concluida para "${collected.searchTerm}". Importando ${collected.productLinks.length} produto(s).`,
       });
       return;
     } catch (error) {
@@ -542,7 +542,7 @@ async function runProductSearchImportJob(job: MutableProductImportJob, sourceUrl
 
       setJobMessage(
         job,
-        "A busca oficial do Mercado Livre recusou a consulta. Tentando leitura publica da lista...",
+        "A leitura principal nao encontrou a lista esperada. Tentando varredura publica completa...",
       );
     }
 
@@ -580,7 +580,7 @@ async function runProductSearchImportJob(job: MutableProductImportJob, sourceUrl
         ? error.message
         : error instanceof Error
           ? error.message
-          : "Falha ao consultar a busca oficial do Mercado Livre.";
+          : "Falha ao consultar a lista publica do Mercado Livre.";
     markJobFailed(job, errorMessage);
   }
 }
@@ -676,7 +676,7 @@ export function startMercadoLivreSourceImport(input: {
     sourceLabel: sourceName,
     maxProducts,
     phase: "scanning",
-    message: "Consultando a busca oficial do Mercado Livre...",
+    message: "Consultando a lista publica do Mercado Livre...",
     totalPages: 0,
     totalResults: 0,
     discoveredProducts: 0,

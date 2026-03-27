@@ -52,7 +52,7 @@ function resolveError(error: unknown) {
 
   return {
     status: 500,
-    message: "Nao foi possivel iniciar a importacao oficial do Mercado Livre.",
+    message: "Nao foi possivel iniciar a importacao por HTML inteligente do Mercado Livre.",
   };
 }
 

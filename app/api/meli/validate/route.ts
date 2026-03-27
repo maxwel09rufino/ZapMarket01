@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { db } from "@/lib/db";
 import {
-  ensureActiveMeliCredentialAccessToken,
   ensureMeliSchema,
-  MeliCredentialValidationError,
   resolveMeliUserId,
 } from "@/lib/meli/store";
-import { getProductFromLink, type MercadoLivreProduct } from "@/lib/products/mercadoLivreApi";
+import { fetchMercadoLivreProductByConfiguredApi } from "@/lib/products/mercadoLivreConfigured";
+import type { MercadoLivreFetchedProduct } from "@/lib/products/mercadoLivre";
+import { ProductLookupError } from "@/lib/products/mercadoLivre";
+import { extractMercadoLivreItemIdFromUrl } from "@/lib/products/mercadoLivreLink";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -36,21 +37,10 @@ type ValidationRecordInsert = {
   responseTimeMs: number;
 };
 
-function isMercadoLivreApiError(
-  result: Awaited<ReturnType<typeof getProductFromLink>>,
-): result is {
-  error: true;
-  code: string;
-  message: string;
-  status?: number;
-} {
-  return "error" in result && result.error === true;
-}
-
 function resolveError(error: unknown) {
-  if (error instanceof MeliCredentialValidationError) {
+  if (error instanceof ProductLookupError) {
     return {
-      status: 400,
+      status: error.status,
       message: error.message,
     };
   }
@@ -138,51 +128,27 @@ export async function POST(request: NextRequest) {
 
     const userId = resolveMeliUserId(request.headers.get("x-user-id"));
     const startTime = Date.now();
-    const configuredCredential = await ensureActiveMeliCredentialAccessToken(userId).catch(() => null);
-    const result = await getProductFromLink(productLink, {
-      accessToken: configuredCredential?.accessToken,
-    });
+    const result = await fetchMercadoLivreProductByConfiguredApi(productLink);
 
     const responseTimeMs = Date.now() - startTime;
-    let validationRecord: ValidationRecordInsert;
-
-    if (isMercadoLivreApiError(result)) {
-      validationRecord = {
-        userId,
-        credentialId: configuredCredential?.credential.id ?? null,
-        productLink,
-        productId: null,
-        title: null,
-        price: null,
-        currency: null,
-        imageUrl: null,
-        sellerName: null,
-        stock: null,
-        isValid: false,
-        errorMessage: result.message,
-        validationStatus: "error",
-        responseTimeMs,
-      };
-    } else {
-      const productResult: MercadoLivreProduct = result;
-
-      validationRecord = {
-        userId,
-        credentialId: configuredCredential?.credential.id ?? null,
-        productLink,
-        productId: productResult.id,
-        title: productResult.title,
-        price: productResult.price,
-        currency: productResult.currency,
-        imageUrl: productResult.image || productResult.thumbnail,
-        sellerName: productResult.seller?.name || null,
-        stock: productResult.stock,
-        isValid: true,
-        errorMessage: null,
-        validationStatus: "success",
-        responseTimeMs,
-      };
-    }
+    const productResult: MercadoLivreFetchedProduct = result;
+    const validationRecord: ValidationRecordInsert = {
+      userId,
+      credentialId: null,
+      productLink,
+      productId:
+        extractMercadoLivreItemIdFromUrl(productResult.canonicalLink ?? productResult.link) ?? null,
+      title: productResult.title,
+      price: productResult.price,
+      currency: "BRL",
+      imageUrl: productResult.image || productResult.images[0] || null,
+      sellerName: productResult.seller || null,
+      stock: productResult.stock ?? null,
+      isValid: true,
+      errorMessage: null,
+      validationStatus: "success",
+      responseTimeMs,
+    };
 
     const persistedValidation = await insertValidationRecord(validationRecord);
     const responseMessage = validationRecord.isValid
@@ -194,7 +160,7 @@ export async function POST(request: NextRequest) {
         message: responseMessage,
         error: validationRecord.isValid ? null : responseMessage,
         validation: persistedValidation,
-        product: isMercadoLivreApiError(result) ? null : result,
+        product: result,
       },
       {
         status: validationRecord.isValid ? 200 : 400,

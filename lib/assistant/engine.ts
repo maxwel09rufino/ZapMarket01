@@ -35,7 +35,7 @@ import type {
   AssistantWorkflow,
 } from "@/lib/assistant/types";
 
-const DEFAULT_LOOKUP_MODE: ProductImportLookupMode = "meli-api";
+const DEFAULT_LOOKUP_MODE: ProductImportLookupMode = "html-root-app";
 const MAX_RESULT_CARDS = 6;
 const CONTACT_INLINE_PHONE_REGEX = /(55\d{10,13}|\d{10,15})/;
 const MERCADO_LIVRE_LINK_REGEX = /https?:\/\/[^\s]+(?:mercadolivre|mercadolibre|meli\.la)[^\s]*/i;

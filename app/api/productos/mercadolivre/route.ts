@@ -1,5 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
-import { getProductFromLink, getProductById } from "@/lib/products/mercadoLivreApi";
+import {
+  fetchMercadoLivreProductByHtml,
+  ProductLookupError,
+} from "@/lib/products/mercadoLivre";
+import {
+  buildMercadoLivreItemUrl,
+  extractMercadoLivreItemId,
+} from "@/lib/products/mercadoLivreLink";
+
+function resolveLookupUrl(link: string | null, id: string | null) {
+  if (id) {
+    const normalizedId = extractMercadoLivreItemId(id);
+    if (!normalizedId) {
+      throw new ProductLookupError("ID do produto invalido.", 400);
+    }
+
+    return buildMercadoLivreItemUrl(normalizedId);
+  }
+
+  return String(link ?? "").trim();
+}
 
 /**
  * GET /api/productos/mercadolivre?link=https://...
@@ -22,16 +42,21 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    if (id) {
-      const result = await getProductById(id);
-      const statusCode = "error" in result && result.status ? result.status : 200;
-      return NextResponse.json(result, { status: statusCode });
+    const lookupUrl = resolveLookupUrl(link, id);
+    const result = await fetchMercadoLivreProductByHtml(lookupUrl);
+    return NextResponse.json(result, { status: 200 });
+  } catch (error) {
+    if (error instanceof ProductLookupError) {
+      return NextResponse.json(
+        {
+          error: true,
+          code: "LOOKUP_ERROR",
+          message: error.message,
+        },
+        { status: error.status },
+      );
     }
 
-    const result = await getProductFromLink(link!);
-    const statusCode = "error" in result && result.status ? result.status : 200;
-    return NextResponse.json(result, { status: statusCode });
-  } catch (error) {
     console.error("Erro em /api/productos/mercadolivre:", error);
     return NextResponse.json(
       {
@@ -64,10 +89,20 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const result = await getProductFromLink(link);
-    const statusCode = "error" in result && result.status ? result.status : 200;
-    return NextResponse.json(result, { status: statusCode });
+    const result = await fetchMercadoLivreProductByHtml(link);
+    return NextResponse.json(result, { status: 200 });
   } catch (error) {
+    if (error instanceof ProductLookupError) {
+      return NextResponse.json(
+        {
+          error: true,
+          code: "LOOKUP_ERROR",
+          message: error.message,
+        },
+        { status: error.status },
+      );
+    }
+
     console.error("Erro em POST /api/productos/mercadolivre:", error);
     return NextResponse.json(
       {

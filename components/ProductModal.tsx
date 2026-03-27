@@ -342,7 +342,7 @@ export default function ProductModal({
       setValues(nextValues);
 
       if (options?.autoCreateAndPublish && !isEditing && onSaveAndPublish) {
-        setLookupMessage("Produto encontrado pela API oficial. Cadastrando e abrindo a publicacao...");
+        setLookupMessage("Produto encontrado pelo parser HTML. Cadastrando e abrindo a publicacao...");
         setIsQuickPublishing(true);
         await onSaveAndPublish(buildPayload(nextValues));
         handleClose();
@@ -351,8 +351,8 @@ export default function ProductModal({
 
       setLookupMessage(
         payload.couponLabel
-          ? `Produto encontrado pela API oficial. Promocao detectada: ${payload.couponLabel}.`
-          : `Produto encontrado pela API oficial do Mercado Livre. Preco atual: ${formatCurrencyBRL(
+          ? `Produto encontrado pelo parser HTML. Promocao detectada: ${payload.couponLabel}.`
+          : `Produto encontrado pelo HTML do Mercado Livre. Preco atual: ${formatCurrencyBRL(
               payload.price,
             )}.`,
       );
@@ -431,9 +431,9 @@ export default function ProductModal({
         </div>
 
         <div className="mb-6 rounded-xl border border-white/10 bg-[#0d1420]/80 p-4">
-          <p className="text-sm font-medium text-zinc-100">Importacao pela API oficial do Mercado Livre</p>
+          <p className="text-sm font-medium text-zinc-100">Importacao por HTML inteligente do Mercado Livre</p>
           <p className="mt-1 text-xs text-zinc-400">
-            Cole o link do produto para preencher os dados oficiais, gerar o link de afiliado e
+            Cole o link do produto para preencher os dados extraidos do HTML, gerar o link de afiliado e
             tentar criar o link curto `meli.la`.
           </p>
 
@@ -492,7 +492,8 @@ export default function ProductModal({
           ) : null}
 
           <p className="mt-2 text-xs text-zinc-500">
-            Esse fluxo depende de uma credencial ativa do Mercado Livre em Configuracoes.
+            A leitura do produto usa HTML publico. Credencial ativa fica opcional apenas para
+            afiliado, link curto e publicacao.
           </p>
           {lookupMessage ? <p className="mt-2 text-xs text-zinc-400">{lookupMessage}</p> : null}
         </div>

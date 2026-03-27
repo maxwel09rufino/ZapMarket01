@@ -789,7 +789,7 @@ function ProdutosPageContent() {
       setFeedback(
         !isSearchInputMode && hasAffiliateInput
           ? `${linksToImport.length} par(es) de link enviados para importacao sincronizada.`
-          : `${linksToImport.length} link(s) enviados para importacao oficial do Mercado Livre.`,
+          : `${linksToImport.length} link(s) enviados para importacao por HTML inteligente.`,
       );
     } catch (error) {
       if (isSearchInputMode) {
@@ -975,10 +975,10 @@ function ProdutosPageContent() {
               Importador SaaS Mercado Livre
             </p>
             <h1 className="mt-2 font-heading text-4xl font-bold text-zinc-50">
-              Importacao oficial em lote
+              Importacao HTML em lote
             </h1>
             <p className="mt-2 max-w-3xl text-sm text-zinc-400">
-              O painel agora aceita um ou varios links, consulta apenas a API oficial do Mercado
+              O painel agora aceita um ou varios links, usa leitura HTML inteligente do Mercado
               Livre, inclusive um unico link de busca como `https://lista.mercadolivre.com.br/tenis-nike`,
               gera link de afiliado, tenta encurtar para `meli.la` e cria a mensagem pronta de
               divulgacao para WhatsApp.
@@ -1112,7 +1112,7 @@ function ProdutosPageContent() {
                 ? "A URL de busca usa a API publica para montar a lista. Depois de gerar os links, cole os meli.la na coluna da direita para importar em pares."
                 : hasAffiliateInput
                   ? "Modo sincronizado ativo: o sistema valida a quantidade, guarda a posicao e associa cada meli.la a linha correspondente."
-                  : "O processamento usa fila assincrona, cache em memoria da integracao oficial e controle de erros por item."}
+                  : "O processamento usa fila assincrona, cache em memoria do parser HTML e controle de erros por item."}
             </div>
 
             <div className="flex flex-col gap-3 sm:flex-row">
@@ -1282,7 +1282,7 @@ function ProdutosPageContent() {
                 <p>Ignorados: {visibleImportJob.skippedCount}</p>
                 <p>Falhas: {visibleImportJob.failedCount}</p>
                 <p>Produtos ja existentes: {visibleImportJob.existingProductsAtStart}</p>
-                <p>Origem: API oficial do Mercado Livre</p>
+                <p>Origem: HTML inteligente do Mercado Livre</p>
                 <p>Fonte: {visibleImportJob.sourceLabel ?? "painel"}</p>
               </div>
 
@@ -1332,7 +1332,7 @@ function ProdutosPageContent() {
               </h3>
               <p className="mt-2 text-zinc-400">
                 Cole acima uma busca publica do Mercado Livre ou links de produto para montar sua
-                base oficial com item ID, links de afiliado e mensagem pronta para WhatsApp.
+                base com item ID, links de afiliado e mensagem pronta para WhatsApp.
               </p>
             </div>
           </Card>

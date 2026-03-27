@@ -20,7 +20,7 @@ const tabs = [
   {
     id: "validator" as const,
     label: "Validador",
-    description: "Testar links e revisar historico da API oficial",
+    description: "Testar links e revisar historico do parser HTML",
     Icon: CheckSquare,
   },
 ];
@@ -50,11 +50,11 @@ function SettingsPageContent() {
               </div>
 
               <h1 className="font-heading text-4xl font-bold tracking-tight text-zinc-50 sm:text-5xl">
-                Credenciais, validacao e controle oficial da API.
+                Credenciais, validacao e parser inteligente do Mercado Livre.
               </h1>
               <p className="mt-4 max-w-2xl text-base leading-7 text-zinc-300 sm:text-lg">
-                Centralize as credenciais da sua aplicacao, mantenha a busca oficial pronta para a
-                area de produtos e valide links do Mercado Livre sem sair do painel.
+                Centralize as credenciais da sua aplicacao, mantenha os fluxos de afiliado prontos
+                e valide links do Mercado Livre sem sair do painel.
               </p>
             </div>
 
@@ -62,8 +62,8 @@ function SettingsPageContent() {
               <Card className="rounded-3xl border-white/10 bg-[#0a111d]/90 p-5">
                 <div className="flex items-start justify-between gap-3">
                   <div>
-                    <p className="text-sm text-zinc-400">Busca oficial</p>
-                    <p className="mt-2 text-2xl font-bold text-zinc-50">API</p>
+                    <p className="text-sm text-zinc-400">Leitura principal</p>
+                    <p className="mt-2 text-2xl font-bold text-zinc-50">HTML</p>
                   </div>
                   <div className="rounded-2xl bg-emerald-500/15 p-3 text-emerald-300">
                     <ShieldCheck className="size-5" />
@@ -150,8 +150,8 @@ function SettingsPageContent() {
               </h2>
               <p className="mt-2 text-sm leading-6 text-zinc-300">
                 Cadastre primeiro as credenciais ativas da sua conta. Depois use o validador para
-                testar links e revisar o historico salvo no PostgreSQL antes de habilitar a busca
-                oficial na area de produtos.
+                testar links e revisar o historico salvo no PostgreSQL antes de liberar a
+                importacao principal na area de produtos.
               </p>
             </div>
             <div className="grid gap-3 text-sm text-zinc-200 sm:grid-cols-3 lg:grid-cols-1">
@@ -162,7 +162,7 @@ function SettingsPageContent() {
                 2. Confirmar token ativo
               </div>
               <div className="rounded-2xl border border-white/10 bg-black/20 px-4 py-3">
-                3. Validar links oficiais
+                3. Validar links pelo HTML
               </div>
             </div>
           </div>

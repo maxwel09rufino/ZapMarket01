@@ -1,6 +1,5 @@
-import { MeliCredentialValidationError } from "@/lib/meli/store";
 import {
-  fetchMercadoLivreProductByUrl,
+  fetchMercadoLivreProductByHtml,
   ProductLookupError,
   type MercadoLivreFetchedProduct,
 } from "@/lib/products/mercadoLivre";
@@ -81,7 +80,7 @@ export async function resolveExtensionProductLookup(
       }
     }
 
-    return fetchMercadoLivreProductByUrl(rawUrl);
+    return fetchMercadoLivreProductByHtml(rawUrl);
   }
 
   if (lookupMode === "meli-api") {
@@ -91,8 +90,8 @@ export async function resolveExtensionProductLookup(
   try {
     return await fetchMercadoLivreProductByConfiguredApi(rawUrl);
   } catch (error) {
-    if (error instanceof ProductLookupError || error instanceof MeliCredentialValidationError) {
-      return fetchMercadoLivreProductByUrl(rawUrl);
+    if (error instanceof ProductLookupError) {
+      return fetchMercadoLivreProductByHtml(rawUrl);
     }
 
     throw error;

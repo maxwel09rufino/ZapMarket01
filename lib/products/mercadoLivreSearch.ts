@@ -184,7 +184,7 @@ function normalizeMaxProducts(value: number | undefined) {
 
   if (!Number.isFinite(value) || value <= 0) {
     throw new MercadoLivreSearchError(
-      "O limite da importacao oficial precisa ser um numero inteiro maior que zero.",
+      "O limite da importacao por HTML precisa ser um numero inteiro maior que zero.",
       400,
     );
   }

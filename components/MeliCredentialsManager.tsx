@@ -295,7 +295,7 @@ export default function MeliCredentialsManager() {
               <p className="mt-1 text-sm text-zinc-500">
                 {activeCredential?.meliUserId
                   ? `Conta ${activeCredential.meliUserId}`
-                  : "Cadastre uma credencial para habilitar a busca oficial."}
+                  : "Cadastre uma credencial para afiliado, link curto e publicacao."}
               </p>
             </div>
             <div className="rounded-2xl bg-emerald-500/15 p-3 text-emerald-300">
@@ -329,7 +329,7 @@ export default function MeliCredentialsManager() {
               <p className="text-sm text-zinc-400">Credenciais salvas</p>
               <p className="mt-2 text-xl font-semibold text-zinc-50">{credentials.length}</p>
               <p className="mt-1 text-sm text-zinc-500">
-                A credencial ativa e a usada na busca oficial e na geracao de links afiliados.
+                A credencial ativa e a usada nos recursos afiliados, encurtador e publicacao.
               </p>
             </div>
             <div className="rounded-2xl bg-violet-500/15 p-3 text-violet-300">
