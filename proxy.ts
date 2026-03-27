@@ -25,6 +25,10 @@ function clearSessionCookie(response: NextResponse) {
 }
 
 export async function proxy(request: NextRequest) {
+  if (process.env.DISABLE_AUTH === "true") {
+    return NextResponse.next();
+  }
+
   const { pathname } = request.nextUrl;
 
   if (isPublicApiPath(pathname)) {

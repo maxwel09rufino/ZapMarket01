@@ -10,7 +10,7 @@ const PASSWORD_MIN_LENGTH = 6;
 const LOGIN_WINDOW_MS = 10 * 60 * 1000;
 const LOGIN_LOCK_MS = 15 * 60 * 1000;
 const LOGIN_MAX_ATTEMPTS = 5;
-const AUTH_BYPASS_ENABLED = true;
+const AUTH_BYPASS_ENABLED = process.env.DISABLE_AUTH === "true";
 
 type UserRow = {
   id: string;
